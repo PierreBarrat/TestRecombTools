@@ -6,6 +6,7 @@ version = "0.1.0"
 [deps]
 ARGTools = "9d79bb22-e449-4c7c-894c-454c3d3f5473"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+Clustering = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 RecombTools = "03f602be-98a1-4bb2-9504-fbd3406624a7"
