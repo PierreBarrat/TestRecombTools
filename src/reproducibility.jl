@@ -14,10 +14,32 @@ function branch_similarity(t::Tree, MCC1, MCC2)
 	return s / length(nodes(t))
 end
 
+function varinfo_similarity(t::Tree, MCCs...)
+	leaves = sort(collect(keys(t.lleaves)))
+	assignments = [assignment_vector(leaves, mccs) for mccs in MCCs]
+	out = 0
+	Z = 0
+	for i in 1:length(MCCs), j in (i+1):length(MCCs)
+		out += Clustering.varinfo(assignments[i], assignments[j])
+		Z += 1
+	end
+	return out / Z
+end
+function assignment_vector(leaves, MCCs)
+	a = zeros(Int, length(leaves))
+	for (k,m) in enumerate(MCCs)
+		for n in m
+			a[findfirst(==(n), leaves)] = k
+		end
+	end
+
+	return a
+end
+
 
 function measure_reproducibility(
 	sim, arg::ARG, nit, oa::OptArgs;
-	cutoff=0, preresolve=false,
+	cutoff=0, preresolve=false, Nrep = 10,
 )
 	ts = ARGTools.trees_from_ARG(arg)
 	trees = Dict(i => t for (i,t) in enumerate(ts))
@@ -39,11 +61,12 @@ function measure_reproducibility(
 end
 
 function eval_reproducibility(nit, N, n, ρ, oa; Nrep = 10, cutoff = 0.)
+	sim = varinfo_similarity
 	dat = zeros(Nrep, 3)
 	for rep in 1:Nrep
 		arg = ARGTools.SimulateARG.simulate(N, get_r(ρ, n, N, :yule), n)
 		dat[rep,:] .= measure_reproducibility(
-			branch_similarity, arg, nit, oa;
+			sim, arg, nit, oa;
 			cutoff = cutoff*N
 		)
 	end

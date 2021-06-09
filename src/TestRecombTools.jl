@@ -1,6 +1,7 @@
 module TestRecombTools
 
 using ARGTools
+using Clustering
 using CSV
 using DataFrames
 using Distributions
