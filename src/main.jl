@@ -58,6 +58,7 @@ function eval_naive_inf(N::Int64, n::Int64, ρ::Float64, simtype::Symbol;
         push!(dat, d)
     end
     #
+    out != "" && CSV.write(out, dat)
     return dat
 end
 
@@ -88,6 +89,7 @@ function eval_real(N::Int, n::Int, ρ::Float64, simtype::Symbol;
         push!(dat, d)
     end
     #
+    out != "" && CSV.write(out, dat)
     return dat
 end
 
@@ -169,6 +171,7 @@ function eval_runopt(γ::Real, N::Int64, n::Int64, ρ::Float64, simtype::Symbol;
         push!(dat, d)
     end
     #
+    out != "" && CSV.write(out, dat)
     return dat
 end
 
@@ -226,10 +229,7 @@ function eval_runopt_manytrees(γ::Real, N::Int, n::Int, ρ::Float64, simtype::S
                 verbose=verbose,
             )
             try
-                MCCs = computeMCCs!(
-                    trees, oa;
-                    preresolve=preresolve,
-                )
+                MCCs = computeMCCs!(trees, oa; preresolve=preresolve)
                 return MCCs
             catch err
                 mkpath("tmp")
@@ -251,6 +251,7 @@ function eval_runopt_manytrees(γ::Real, N::Int, n::Int, ρ::Float64, simtype::S
         push!(dat, d)
     end
     #
+    out != "" && CSV.write(out, dat)
     return dat
 end
 
@@ -318,7 +319,7 @@ function _eval_split_inf(true_splits, resolved_splits, init_splits)
 end
 
 """
-    _eval_mcc_splits_inf(f, N::Int64, n0::Int64, r::Float64; v=true, simtype=:kingman)
+    _eval_mcc_inf(f, N::Int64, n0::Int64, r::Float64; v=true, simtype=:yule, K=2)
 
 Evaluate the inference of MCCs by function `f`. ARG simulation made with `(N,n0,r)`.
 """
@@ -344,26 +345,6 @@ end
 
 
 
-function eval_mcc_inf(f, N::Int64, n0::Int64, rrange;
-        Nrep=25*ones(Int64, length(rrange)), v=true, simtype=:kingman)
-    dat = DataFrame(df_fields())
-    for (i,r) in enumerate(rrange)
-        v && print("r=$(round(ρ,digits=5)), $i/$(length(rrange))                                                     \r")
-        Nr = Nrep[i]
-        for rep in 1:Nr
-            push!(dat, _eval_mcc_inf(f, N, n0, r, v=v, simtype=simtype))
-        end
-    end
-    return dat
-end
-function eval_mcc_inf(f, N::Int64, n0::Int64, r::Float64;
-        Nrep=25, v=true, simtype=:kingman)
-    dat = DataFrame(df_fields())
-    for rep in 1:Nrep
-        push!(dat, _eval_mcc_inf(f, N, n0, r, v=v, simtype=simtype))
-    end
-    return dat
-end
 
 """
     df_fields()
