@@ -21,4 +21,7 @@ export remove_branches!
 include("reproducibility.jl")
 export eval_reproducibility
 
+include("eval_gamma.jl")
+export eval_gamma
+
 end # module
