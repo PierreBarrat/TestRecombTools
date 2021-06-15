@@ -18,6 +18,9 @@ export eval_mcc_inf
 export eval_runopt
 export remove_branches!
 
+include("tools.jl")
+export consistent_mcc_triplets
+
 include("reproducibility.jl")
 export eval_reproducibility
 

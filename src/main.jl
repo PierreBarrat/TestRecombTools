@@ -370,39 +370,4 @@ function df_fields()
 end
 
 
-#####################
-##################### REMOVING BRANCHES
-#####################
-"""
-    remove_branches!(n::TreeNode, p::Distribution)
-"""
-function remove_branches!(n::TreeNode, p::Distribution)
-    if !ismissing(n.tau) && n.tau < rand(p)
-        if !n.isleaf
-            nr = delete_node!(n)
-            for c in nr.child
-                remove_branches!(c, p)
-            end
-        else
-            n.tau = 0.
-        end
-    else
-        for c in n.child
-            remove_branches!(c, p)
-        end
-    end
-end
-
-"""
-    remove_branches!(t::Tree, p)
-
-Stochastically remove branches from `t` using probability distribution `p`
-"""
-function remove_branches!(t::Tree, p)
-    remove_branches!(t.root, p)
-    node2tree!(t, t.root)
-    nothing
-end
-remove_branches!(t::Tree, c::Real, N::Int) = remove_branches!(t, Exponential(c*N))
-
 
