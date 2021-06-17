@@ -1,40 +1,4 @@
-"""
-	branch_similarity(t::Tree, MCC1, MCC2)
 
-Return fraction of branches in `t` that are predicted to be in an mcc for both `MCC1` and
-  `MCC2`.
-"""
-function branch_similarity(t::Tree, MCC1, MCC2)
-	s = 0
-	for n in nodes(t)
-		if RecombTools.is_branch_in_mccs(n, MCC1) == RecombTools.is_branch_in_mccs(n, MCC2)
-			s += 1
-		end
-	end
-	return s / length(nodes(t))
-end
-
-function varinfo_similarity(t::Tree, MCCs...)
-	leaves = sort(collect(keys(t.lleaves)))
-	assignments = [assignment_vector(leaves, mccs) for mccs in MCCs]
-	out = 0
-	Z = 0
-	for i in 1:length(MCCs), j in (i+1):length(MCCs)
-		out += Clustering.varinfo(assignments[i], assignments[j])
-		Z += 1
-	end
-	return out / Z
-end
-function assignment_vector(leaves, MCCs)
-	a = zeros(Int, length(leaves))
-	for (k,m) in enumerate(MCCs)
-		for n in m
-			a[findfirst(==(n), leaves)] = k
-		end
-	end
-
-	return a
-end
 
 
 function measure_reproducibility(

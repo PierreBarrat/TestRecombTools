@@ -2,15 +2,7 @@
 ##################### Evaluating MCC inference
 #####################
 
-function get_r(ρ::Float64, n::Int64, N::Int64, simtype::Symbol)
-    if simtype == :kingman
-        return ρ * n / N
-    elseif simtype == :yule
-        return ρ / N
-    else
-        @error "Unrecognized `simtype`."
-    end
-end
+
 
 """
     eval_naive_inf(N::Int64, n::Int64, ρ::Float64, simtype::Symbol;
