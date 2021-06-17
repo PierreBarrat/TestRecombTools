@@ -36,7 +36,7 @@ function eval_gamma(γvals, N, n, ρ, oa; Nrep = 10, cutoff = 0.)
 	dat = zeros(Float64, length(γvals), 3)
 	for rep in 1:Nrep
 		arg = ARGTools.SimulateARG.simulate(N, get_r(ρ, n, N, :yule), n)
-		dat .+= distance_to_naive(sim, arg,oa, γvals; cutoff)
+		dat .+= distance_to_naive(sim, arg,oa, γvals; cutoff = cutoff*N)
 	end
 
 	return dat / Nrep
