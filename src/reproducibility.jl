@@ -25,7 +25,7 @@ function measure_reproducibility(
 end
 
 function eval_reproducibility(nit, N, n, ρ, oa; Nrep = 10, cutoff = 0.)
-	sim = varinfo_similarity
+	sim = rand_index_similarity
 	dat = zeros(Nrep, 3)
 	for rep in 1:Nrep
 		arg = ARGTools.SimulateARG.simulate(N, get_r(ρ, n, N, :yule), n)
