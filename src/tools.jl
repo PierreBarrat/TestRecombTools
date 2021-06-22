@@ -32,16 +32,18 @@ end
     remove_branches!(n::TreeNode, p::Distribution)
 """
 function remove_branches!(n::TreeNode, p::Distribution)
-    for c in n.child
-        remove_branches!(c, p)
-    end
-
-    if !ismissing(n.tau) && n.tau < rand(p)
+    child_list = copy(n.child)
+	r = rand(p)
+    if !ismissing(n.tau) && n.tau < r
         if !n.isleaf
-            delete_node!(n)
+            nr = delete_node!(n)
         else
             n.tau = 0.
         end
+    end
+
+    for c in child_list
+        remove_branches!(c, p)
     end
 
     return nothing
