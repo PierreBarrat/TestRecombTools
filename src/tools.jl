@@ -1,3 +1,46 @@
+function make_outfolder_name(N, n, ρ, cutoff, γ, nit, resolve, preresolve)
+	out = "MCCs_N$(N)_n$(n)_rho$(round(ρ, sigdigits=2))_cutoff$(cutoff)"
+	out *= "_gamma$(γ)_nit$(ceil(Int, nit(n)))_resolve$(resolve)_preresolve$(preresolve)"
+	return out
+end
+
+function parse_outfolder(of)
+	sof = String.(split(of, '_'))
+	args = Dict()
+	for s in sof
+		if s[1] == 'N'
+			args[:N] = parse(Int, s[2:end])
+
+		elseif length(s) >= 1 && s[1] == 'n' && s[2] != 'i'
+			args[:n] = parse(Int, s[2:end])
+
+		elseif length(s) >= 3 && s[1:3] == "rho"
+			args[:ρ] = parse(Float64, s[4:end])
+
+		elseif length(s) >= 6 && s[1:6] == "cutoff"
+			args[:cutoff] = parse(Float64, s[7:end])
+
+		elseif length(s) >= 5 && s[1:5] == "gamma"
+			args[:γ] = parse(Float64, s[6:end])
+
+		elseif length(s) >= 3 && s[1:3] == "nit"
+			args[:nit] = parse(Int, s[4:end])
+
+		elseif length(s) >= 7 && s[1:7] == "resolve"
+			args[:resolve] = parse(Bool, s[8:end])
+
+		elseif length(s) >= 10 && s[1:10] == "preresolve"
+			args[:preresolve] = parse(Bool, s[11:end])
+
+		end
+	end
+
+	return args
+end
+
+
+
+
 """
     consistent_mcc_triplets(M12, M13, M23)
 """
@@ -66,67 +109,4 @@ function remove_branches!(t::Tree, c::Real, N::Int)
 	return nothing
 end
 
-"""
-	branch_similarity(t::Tree, MCC1, MCC2)
 
-Return fraction of branches in `t` that are predicted to be in an mcc for both `MCC1` and
-  `MCC2`.
-"""
-function branch_similarity(t::Tree, MCC1, MCC2)
-	s = 0
-	for n in nodes(t)
-		if RecombTools.is_branch_in_mccs(n, MCC1) == RecombTools.is_branch_in_mccs(n, MCC2)
-			s += 1
-		end
-	end
-	return s / length(nodes(t))
-end
-
-"""
-	varinfo_similarity(MCCs...)
-"""
-varinfo_similarity(t::Tree, MCCs...) = varinfo_similarity(MCCs...)
-function varinfo_similarity(MCCs...)
-	leaves = sort(vcat(first(MCCs)...))
-	assignments = [assignment_vector(leaves, mccs) for mccs in MCCs]
-	out = 0
-	Z = 0
-	for i in 1:length(MCCs), j in (i+1):length(MCCs)
-		out += Clustering.varinfo(assignments[i], assignments[j])
-		Z += 1
-	end
-	return out / Z
-end
-"""
-"""
-function rand_index_similarity(MCCs...)
-	leaves = sort(vcat(first(MCCs)...))
-	assignments = [assignment_vector(leaves, mccs) for mccs in MCCs]
-	out = 0
-	Z = 0
-	for i in 1:length(MCCs), j in (i+1):length(MCCs)
-		out += (1 - Clustering.randindex(assignments[i], assignments[j])[2])
-		Z += 1
-	end
-	return out / Z
-end
-function assignment_vector(leaves, MCCs)
-	a = zeros(Int, length(leaves))
-	for (k,m) in enumerate(MCCs)
-		for n in m
-			a[findfirst(==(n), leaves)] = k
-		end
-	end
-
-	return a
-end
-
-function get_r(ρ, n, N, simtype::Symbol)
-    if simtype == :kingman
-        return ρ * n / N
-    elseif simtype == :yule
-        return ρ / N
-    else
-        @error "Unrecognized `simtype`."
-    end
-end

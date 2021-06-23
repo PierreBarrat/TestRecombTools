@@ -1,4 +1,143 @@
 #####################
+##################### Simulating ARGs and computing MCCs. Writing result.
+#####################
+
+# function simulate(; kwargs...
+# 	# # ARG simulation
+# 	# N = 100_000,
+# 	# n = 100,
+# 	# ρ = 0.1,
+# 	# cutoff = 0.,
+# 	# simtype = :yule,
+# 	# # Inference
+# 	# γ = 2,
+# 	# resolve = true,
+# 	# # Others
+# 	# Nrep = 250,
+# 	# write = true,
+# 	# outfolder = "",
+# )
+# 	args = Dict(kwargs)
+# 	println(args)
+# 	default_inputs = Dict(
+# 		# ARG simulation
+# 		:N => 100_000,
+# 		:n => 100,
+# 		:ρ => 0.1,
+# 		:cutoff => 0.,
+# 		:simtype => :yule,
+# 		# Inference
+# 		:γ => 2,
+# 		:resolve => true,
+# 		# Others
+# 		:Nrep => 250,
+# 		:write => true,
+# 		:outfolder => "",
+# 	)
+# 	for (k, v) in default_inputs
+# 		if haskey(args, k) && args[k] == v
+# 			println("$k has its default value")
+# 		elseif
+# 			println("$k has another default value: $v")
+# 		end
+# 	end
+
+# end
+
+"""
+	simulate(;
+	# ARG simulation
+	N = 100_000,
+	n = 100,
+	ρ = 0.1,
+	simtype = :yule,
+	cutoff = 0.,
+	# Inference
+	γ = 2,
+	nit = n->n/10,
+	resolve = true,
+	preresolve = false,
+	# Others
+	Nrep = 250,
+	write = true,
+	outfolder,
+)
+"""
+function simulate(;
+	# ARG simulation
+	N = 100_000,
+	n = 100,
+	ρ = 0.1,
+	simtype = :yule,
+	cutoff = 0.,
+	# Inference
+	γ = 2,
+	nit = n->n/10,
+	resolve = true,
+	preresolve = false,
+	# Others
+	Nrep = 250,
+	write = true,
+	outfolder = make_outfolder_name(N, n, ρ, cutoff, γ, nit, resolve, preresolve),
+)
+	for rep in 1:Nrep
+		arg, trees = simulate_trees(N, n, ρ, simtype, cutoff)
+		global allMCCs = get_mccs(arg, trees, γ, ceil(Int, nit(n)), resolve, preresolve) # array of length 4
+		write && write_mccs(outfolder, rep, allMCCs, N, n, ρ, cutoff, γ, resolve)
+	end
+
+	return nothing
+end
+
+
+
+function write_mccs(outfolder, id, allMCCs, N, n, ρ, cutoff, γ, resolve)
+	mkpath(outfolder * "/rep$(id)")
+	# Real
+	of = outfolder * "/rep$(id)/realMCCs.dat"
+	RecombTools.write_mccs(of, allMCCs[1])
+	# Naive
+	of = outfolder * "/rep$(id)/naiveMCCs.dat"
+	RecombTools.write_mccs(of, allMCCs[2])
+	# Inferred
+	of = outfolder * "/rep$(id)/inferredMCCs.dat"
+	RecombTools.write_mccs(of, allMCCs[3])
+end
+
+function get_mccs(arg, trees, γ, nit, resolve, preresolve)
+	Md = length(leaves(first(values(trees)))) / nit
+	oa = OptArgs(; γ, resolve, Md = Md)
+
+	rMCCs = ARGTools.MCCs_from_arg(arg)
+	iMCCs1 = computeMCCs(trees, oa; preresolve)
+	# iMCCs2 = computeMCCs(trees, oa; preresolve)
+	naiveMCCs = computeMCCs(trees, oa; preresolve, naive=true)
+
+	return rMCCs, naiveMCCs, iMCCs1 #, iMCCs2
+end
+
+function simulate_trees(N, n, ρ, simtype, cutoff)
+	# ARG
+	arg = ARGTools.SimulateARG.simulate(N, get_r(ρ, n, N, simtype), n)
+	# Trees
+	ts = ARGTools.trees_from_ARG(arg)
+	trees = Dict(i => t for (i,t) in enumerate(ts))
+	if cutoff > 0
+		for t in values(trees)
+			remove_branches!(t, Exponential(cutoff * N))
+		end
+	end
+
+	return arg, trees
+end
+
+
+
+
+
+
+
+#####################
 ##################### Evaluating MCC inference
 #####################
 

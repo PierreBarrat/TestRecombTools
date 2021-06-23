@@ -27,4 +27,6 @@ export eval_reproducibility
 include("eval_gamma.jl")
 export eval_gamma
 
+include("clustering_distance.jl")
+
 end # module
