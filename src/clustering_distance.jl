@@ -8,15 +8,21 @@ Return a `DataFrame` with columns:
 """
 function simulate_compute_clustering_distances(dir, sim)
 	df = DataFrame()
-	for f in readdir(dir)
+	N = length(readdir(dir))
+	for (i,f) in enumerate(readdir(dir, join=true))
+		print("$i / $N")
 		if !isnothing(match(r"MCCs_", f))
 			args = parse_outfolder(f)
 			dat = _compute_clustering_distances(f, sim)
 			args[:naive_to_real] = dat[1]
 			args[:inferred_to_real] = dat[2]
 			args[:inferred_to_naive] = dat[3]
+			for x in names(df)
+		       df[!,x] = convert(Vector{Union{Missing, eltype(df[!,x])}}, df[!,x])
+       		end
 			append!(df, DataFrame(args))
 		end
+		print("                    \r")
 	end
 
 	return sort!(df, [:ρ])
@@ -24,10 +30,10 @@ end
 
 function _compute_clustering_distances(folder, sim)
 	args = parse_outfolder(folder)
-	dat = zeros(3)
+	dat = zeros(Union{Missing,Float64}, 3)
 	Z = 0
 	for f in readdir(folder)
-		if !isnothing(match(r"rep", f))
+		if !isnothing(match(r"rep", f)) && length(readdir(folder * "/" * f)) >= 3
 			rep = parse(Int, f[4:end])
 			rMCCs = read_mccs("$(folder)/$(f)/realMCCs.dat")
 			nMCCs = read_mccs("$(folder)/$(f)/naiveMCCs.dat")
@@ -38,7 +44,9 @@ function _compute_clustering_distances(folder, sim)
 			Z += 1
 		end
 	end
-
+	if Z == 0
+		dat = [missing, missing, missing]
+	end
 	return dat / Z
 end
 

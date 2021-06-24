@@ -102,6 +102,9 @@ function remove_branches!(t::Tree, p)
     node2tree!(t, t.root)
     nothing
 end
+"""
+	remove_branches!(t::Tree, c::Real, N::Int)
+"""
 function remove_branches!(t::Tree, c::Real, N::Int)
 	if c > 0
 		remove_branches!(t, Exponential(c*N))

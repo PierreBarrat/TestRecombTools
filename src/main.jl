@@ -2,47 +2,6 @@
 ##################### Simulating ARGs and computing MCCs. Writing result.
 #####################
 
-# function simulate(; kwargs...
-# 	# # ARG simulation
-# 	# N = 100_000,
-# 	# n = 100,
-# 	# ρ = 0.1,
-# 	# cutoff = 0.,
-# 	# simtype = :yule,
-# 	# # Inference
-# 	# γ = 2,
-# 	# resolve = true,
-# 	# # Others
-# 	# Nrep = 250,
-# 	# write = true,
-# 	# outfolder = "",
-# )
-# 	args = Dict(kwargs)
-# 	println(args)
-# 	default_inputs = Dict(
-# 		# ARG simulation
-# 		:N => 100_000,
-# 		:n => 100,
-# 		:ρ => 0.1,
-# 		:cutoff => 0.,
-# 		:simtype => :yule,
-# 		# Inference
-# 		:γ => 2,
-# 		:resolve => true,
-# 		# Others
-# 		:Nrep => 250,
-# 		:write => true,
-# 		:outfolder => "",
-# 	)
-# 	for (k, v) in default_inputs
-# 		if haskey(args, k) && args[k] == v
-# 			println("$k has its default value")
-# 		elseif
-# 			println("$k has another default value: $v")
-# 		end
-# 	end
-
-# end
 
 """
 	simulate(;
