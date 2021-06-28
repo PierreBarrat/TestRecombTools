@@ -66,7 +66,73 @@ function consistent_mcc_triplets(M12, M13, M23, trees)
 	return Z == 0 ? 0.0 : s / Z
 end
 
+function read_simulate_mccs(file)
+	MCCs = []
+	mcc = []
+	for l in eachline(file)
+		if l[1] == '#'
+			mcc != [] && push!(MCCs, mcc)
+			mcc = []
+		else
+			push!(mcc, String.(split(l, ',')))
+		end
+	end
+	mcc != [] && push!(MCCs, mcc)
 
+	return MCCs
+end
+
+function _read_simulate_results(folder, func)
+	args = parse_outfolder(folder)
+	dat = zeros(Float64, 3)
+	Z = 0
+	for f in readdir(folder)
+		if !isnothing(match(r"rep", f)) && length(readdir(folder * "/" * f)) >= 3
+			# rep = parse(Int, f[4:end])
+			rMCCs = read_simulate_mccs("$(folder)/$(f)/realMCCs.dat")
+			nMCCs = read_simulate_mccs("$(folder)/$(f)/naiveMCCs.dat")
+			iMCCs = read_simulate_mccs("$(folder)/$(f)/inferredMCCs.dat")
+			# println(iMCCs)
+			# println(func(iMCCs))
+			dat[1] += mapreduce(func, +, iMCCs; init=0)
+			dat[2] += mapreduce(func, +, rMCCs; init=0)
+			dat[3] += mapreduce(func, +, nMCCs; init=0)
+			Z += length(rMCCs)
+		end
+	end
+	if Z == 0
+		dat = [missing, missing, missing]
+	end
+	return dat / Z
+end
+
+"""
+	read_simulate_results(dir, func::Dict)
+"""
+function read_simulate_results(dir, func::Dict)
+	df = DataFrame()
+	N = length(readdir(dir))
+	for (i,f) in enumerate(readdir(dir, join=true))
+		print("$i / $N")
+		if !isnothing(match(r"MCCs_", f))
+			args = parse_outfolder(f)
+			for (name, fun) in func
+				dat = _read_simulate_results(f, fun)
+				args[Symbol(name, :_inferred)] = dat[1]
+				args[Symbol(name, :_real)] = dat[2]
+				args[Symbol(name, :_naive)] = dat[3]
+			end
+
+			for x in names(df)
+		       df[!,x] = convert(Vector{Union{Missing, eltype(df[!,x])}}, df[!,x])
+       		end
+			append!(df, DataFrame(args))
+		end
+		print("                    \r")
+	end
+
+	return sort!(df, [:ρ])
+end
 
 #####################
 ##################### REMOVING BRANCHES

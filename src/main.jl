@@ -42,25 +42,52 @@ function simulate(;
 	for rep in 1:Nrep
 		arg, trees = simulate_trees(N, n, ρ, simtype, cutoff)
 		global allMCCs = get_mccs(arg, trees, γ, ceil(Int, nit(n)), resolve, preresolve) # array of length 4
-		write && write_mccs(outfolder, rep, allMCCs, N, n, ρ, cutoff, γ, resolve)
+		write && write_mccs(outfolder, rep, allMCCs, "a")
+		write && write_trees(outfolder, rep, values(trees), "a")
 	end
 
 	return nothing
 end
 
+function write_trees(outfolder, id, trees, mode="a")
+	dir_id = 1
+	# dir_id = id
+	mkpath(outfolder * "/rep$(dir_id)")
 
+	for (i,t) in enumerate(trees)
+		of = outfolder * "/rep$(dir_id)/tree$(i).nwk"
+		open(of, mode) do w
+			id > 1 ? write(w, "\n# rep $(id)\n") : write(w, "# rep $(id)\n")
+		end
+		TreeTools.write_newick(of, t, "a")
+	end
+end
 
-function write_mccs(outfolder, id, allMCCs, N, n, ρ, cutoff, γ, resolve)
-	mkpath(outfolder * "/rep$(id)")
+function write_mccs(outfolder, id, allMCCs, mode="a")
+	dir_id = 1
+	# dir_id = id
+	mkpath(outfolder * "/rep$(dir_id)")
+
 	# Real
-	of = outfolder * "/rep$(id)/realMCCs.dat"
-	RecombTools.write_mccs(of, allMCCs[1])
+	of = outfolder * "/rep$(dir_id)/realMCCs.dat"
+	open(of, mode) do w
+		id > 1 ? write(w, "\n# rep $(id)\n") : write(w, "# rep $(id)\n")
+	end
+	RecombTools.write_mccs(of, allMCCs[1], "a")
+
 	# Naive
-	of = outfolder * "/rep$(id)/naiveMCCs.dat"
-	RecombTools.write_mccs(of, allMCCs[2])
+	of = outfolder * "/rep$(dir_id)/naiveMCCs.dat"
+	open(of, mode) do w
+		id > 1 ? write(w, "\n# rep $(id)\n") : write(w, "# rep $(id)\n")
+	end
+	RecombTools.write_mccs(of, allMCCs[2], "a")
+
 	# Inferred
-	of = outfolder * "/rep$(id)/inferredMCCs.dat"
-	RecombTools.write_mccs(of, allMCCs[3])
+	of = outfolder * "/rep$(dir_id)/inferredMCCs.dat"
+	open(of, mode) do w
+		id > 1 ? write(w, "\n# rep $(id)\n") : write(w, "# rep $(id)\n")
+	end
+	RecombTools.write_mccs(of, allMCCs[3], "a")
 end
 
 function get_mccs(arg, trees, γ, nit, resolve, preresolve)

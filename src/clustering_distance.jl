@@ -1,10 +1,5 @@
 """
-	read_simulate_results(dir, funcs::Dict)
-
-Input: directory of the form `MCCs_N_ ...`.
-Return a `DataFrame` with columns:
-- for parameters defined in the name of the directory, using the `parse_outfolder` function
-- distance to from naive to real, from inferred to real, and from inferred to naive
+	simulate_compute_clustering_distances(dir, sim)
 """
 function simulate_compute_clustering_distances(dir, sim)
 	df = DataFrame()
