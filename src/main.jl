@@ -29,19 +29,20 @@ function simulate(;
 	ρ = 0.1,
 	simtype = :yule,
 	cutoff = 0.,
+	K = 2,
 	# Inference
 	γ = 2,
 	nit = n->n/10,
 	resolve = true,
-	preresolve = false,
+	preresolve = K > 2,
 	# Others
 	Nrep = 250,
 	write = true,
 	outfolder = make_outfolder_name(N, n, ρ, cutoff, γ, nit, resolve, preresolve),
 )
 	for rep in 1:Nrep
-		arg, trees = simulate_trees(N, n, ρ, simtype, cutoff)
-		global allMCCs = get_mccs(arg, trees, γ, ceil(Int, nit(n)), resolve, preresolve) # array of length 4
+		arg, trees = simulate_trees(N, n, ρ, simtype, cutoff, K)
+		allMCCs = get_mccs(arg, trees, γ, ceil(Int, nit(n)), resolve, preresolve) # array of length 4
 		write && write_mccs(outfolder, rep, allMCCs, "a")
 		write && write_trees(outfolder, rep, values(trees), "a")
 	end
@@ -55,6 +56,7 @@ function write_trees(outfolder, id, trees, mode="a")
 	mkpath(outfolder * "/rep$(dir_id)")
 
 	for (i,t) in enumerate(trees)
+		i > 2 && break
 		of = outfolder * "/rep$(dir_id)/tree$(i).nwk"
 		open(of, mode) do w
 			id > 1 ? write(w, "\n# rep $(id)\n") : write(w, "# rep $(id)\n")
@@ -94,17 +96,17 @@ function get_mccs(arg, trees, γ, nit, resolve, preresolve)
 	Md = length(leaves(first(values(trees)))) / nit
 	oa = OptArgs(; γ, resolve, Md = Md)
 
-	rMCCs = ARGTools.MCCs_from_arg(arg)
-	iMCCs1 = computeMCCs(trees, oa; preresolve)
+	rMCCs = ARGTools.MCCs_from_arg(arg, 1, 2)
+	iMCCs1 = computeMCCs(trees, oa; preresolve)[1,2]
 	# iMCCs2 = computeMCCs(trees, oa; preresolve)
-	naiveMCCs = computeMCCs(trees, oa; preresolve, naive=true)
+	naiveMCCs = computeMCCs(trees, oa; preresolve, naive=true)[1,2]
 
 	return rMCCs, naiveMCCs, iMCCs1 #, iMCCs2
 end
 
-function simulate_trees(N, n, ρ, simtype, cutoff)
+function simulate_trees(N, n, ρ, simtype, cutoff, K)
 	# ARG
-	arg = ARGTools.SimulateARG.simulate(N, get_r(ρ, n, N, simtype), n)
+	arg = ARGTools.SimulateARG.simulate(N, get_r(ρ, n, N, simtype), n; K)
 	# Trees
 	ts = ARGTools.trees_from_ARG(arg)
 	trees = Dict(i => t for (i,t) in enumerate(ts))
