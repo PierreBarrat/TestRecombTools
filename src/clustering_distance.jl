@@ -6,8 +6,8 @@ function simulate_compute_clustering_distances(dir, sim)
 	N = length(readdir(dir))
 	for (i,f) in enumerate(readdir(dir, join=true))
 		print("$i / $N")
-		if !isnothing(match(r"MCCs_", f))
-			args = parse_outfolder(f)
+		if !isnothing(match(r"MCCs_", basename(f)))
+			args = parse_outfolder(basename(f))
 			dat = _compute_clustering_distances(f, sim)
 			args[:naive_to_real] = dat[1]
 			args[:inferred_to_real] = dat[2]
@@ -24,19 +24,21 @@ function simulate_compute_clustering_distances(dir, sim)
 end
 
 function _compute_clustering_distances(folder, sim)
-	args = parse_outfolder(folder)
+	# args = parse_outfolder(folder)
 	dat = zeros(Union{Missing,Float64}, 3)
 	Z = 0
 	for f in readdir(folder)
 		if !isnothing(match(r"rep", f)) && length(readdir(folder * "/" * f)) >= 3
 			rep = parse(Int, f[4:end])
-			rMCCs = read_mccs("$(folder)/$(f)/realMCCs.dat")
-			nMCCs = read_mccs("$(folder)/$(f)/naiveMCCs.dat")
-			iMCCs = read_mccs("$(folder)/$(f)/inferredMCCs.dat")
-			dat[1] += sim(rMCCs, nMCCs)
-			dat[2] += sim(rMCCs, iMCCs)
-			dat[3] += sim(nMCCs, iMCCs)
-			Z += 1
+			rMCCs = read_simulate_mccs("$(folder)/$(f)/realMCCs.dat")
+			nMCCs = read_simulate_mccs("$(folder)/$(f)/naiveMCCs.dat")
+			iMCCs = read_simulate_mccs("$(folder)/$(f)/inferredMCCs.dat")
+			for i in eachindex(rMCCs)
+				dat[1] += sim(rMCCs[i], nMCCs[i])
+				dat[2] += sim(rMCCs[i], iMCCs[i])
+				dat[3] += sim(nMCCs[i], iMCCs[i])
+				Z += 1
+			end
 		end
 	end
 	if Z == 0

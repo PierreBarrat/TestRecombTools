@@ -115,7 +115,7 @@ function read_simulate_results(dir, func::Dict)
 	for (i,f) in enumerate(readdir(dir, join=true))
 		print("$i / $N")
 		if !isnothing(match(r"MCCs_", f))
-			args = parse_outfolder(f)
+			args = parse_outfolder(basename(f))
 			for (name, fun) in func
 				dat = _read_simulate_results(f, fun)
 				args[Symbol(name, :_inferred)] = dat[1]
