@@ -216,7 +216,7 @@ end
 
 """
     eval_runopt(γ::Real, N::Int64, n::Int64, ρ::Float64, simtype::Symbol;
-    Tmin=0.001, dT=0.01, Tmax=1., Md=10, lk_sort=true,
+    Md=10, lk_sort=true,
     cutoff = 0.,
     Nrep = 1,
     preresolve = true,
@@ -228,7 +228,7 @@ end
 Eval the performance of `SplitGraph.runopt` at inferring MCCs.
 """
 function eval_runopt(γ::Real, N::Int64, n::Int64, ρ::Float64, simtype::Symbol;
-    Tmin=0.001, dT=0.01, Tmax=1., Md=10, lk_sort=true,
+    Md=10, lk_sort=true,
     cutoff = 0.,
     Nrep = 1,
     preresolve = true,
@@ -238,7 +238,7 @@ function eval_runopt(γ::Real, N::Int64, n::Int64, ρ::Float64, simtype::Symbol;
 )
     #
     args = Dict(:γ=>γ, :N=>N, :n=>n, :ρ=>ρ, :simtype=>simtype,
-        :Md=>Md, :Tmin=>Tmin, :dT=>dT, :Tmax=>Tmax, :lk_sort=>lk_sort,
+        :Md=>Md, :lk_sort=>lk_sort,
         :cutoff=>cutoff, :preresolve=>preresolve,
     )
     #
@@ -248,7 +248,6 @@ function eval_runopt(γ::Real, N::Int64, n::Int64, ρ::Float64, simtype::Symbol;
     end
     #
     r = get_r(ρ, n, N, simtype)
-    Trange = reverse(Tmin:dT:Tmax)
     #
     function f(arg::ARGTools.ARG)
         let cutoff=cutoff, N=N
@@ -260,7 +259,6 @@ function eval_runopt(γ::Real, N::Int64, n::Int64, ρ::Float64, simtype::Symbol;
             end
             oa = OptArgs(
                 γ=γ,
-                Tmin=Tmin, dT=dT, Tmax=Tmax,
                 Md=Md,
                 likelihood_sort=lk_sort,
                 verbose=verbose,
@@ -298,7 +296,7 @@ end
 """
     eval_runopt_manytrees(γ::Real, N::Int64, n::Int64, ρ::Float64, simtype::Symbol;
         K = 3,
-        Tmin=0.001, dT=0.01, Tmax=1., Md=10, lk_sort=true,
+        Md=10, lk_sort=true,
         cutoff = 0.,
         Nrep = 1,
         preresolve = true,
@@ -310,7 +308,7 @@ end
 Eval the performance of `SplitGraph.runopt` at inferring MCCs.
 """
 function eval_runopt_manytrees(γ::Real, N::Int, n::Int, ρ::Float64, simtype::Symbol, K::Int;
-    Tmin=0.001, dT=0.01, Tmax=1., Md=10, lk_sort=true,
+     Md=10, lk_sort=true,
     cutoff = 0.,
     Nrep = 1,
     preresolve = true,
@@ -320,7 +318,7 @@ function eval_runopt_manytrees(γ::Real, N::Int, n::Int, ρ::Float64, simtype::S
 )
     #
     args = Dict(:γ=>γ, :N=>N, :n=>n, :ρ=>ρ, :simtype=>simtype,
-        :Md=>Md, :Tmin=>Tmin, :dT=>dT, :Tmax=>Tmax, :lk_sort=>lk_sort,
+        :Md=>Md, :lk_sort=>lk_sort,
         :cutoff=>cutoff, :preresolve=>preresolve,
     )
     #
@@ -330,7 +328,6 @@ function eval_runopt_manytrees(γ::Real, N::Int, n::Int, ρ::Float64, simtype::S
     end
     #
     r = get_r(ρ, n, N, simtype)
-    Trange = reverse(Tmin:dT:Tmax)
     #
     function f(arg::ARGTools.ARG)
         let cutoff=cutoff, N=N
@@ -343,7 +340,6 @@ function eval_runopt_manytrees(γ::Real, N::Int, n::Int, ρ::Float64, simtype::S
             end
             oa = OptArgs(
                 γ=γ,
-                Tmin=Tmin, dT=dT, Tmax=Tmax,
                 Md=Md,
                 likelihood_sort=lk_sort,
                 verbose=verbose,
