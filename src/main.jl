@@ -38,11 +38,12 @@ function simulate(;
 	# Others
 	Nrep = 250,
 	write = true,
+	verbose = false,
 	outfolder = make_outfolder_name(N, n, ρ, cutoff, γ, nit, resolve, preresolve),
 )
 	for rep in 1:Nrep
 		arg, trees = simulate_trees(N, n, ρ, simtype, cutoff, K)
-		allMCCs = get_mccs(arg, trees, γ, ceil(Int, nit(n)), resolve, preresolve) # array of length 4
+		allMCCs = get_mccs(arg, trees, γ, ceil(Int, nit(n)), resolve, preresolve; verbose) # array of length 4
 		write && write_mccs(outfolder, rep, allMCCs, "a")
 		write && write_trees(outfolder, rep, values(trees), "a")
 	end
@@ -92,9 +93,9 @@ function write_mccs(outfolder, id, allMCCs, mode="a")
 	RecombTools.write_mccs(of, allMCCs[3], "a")
 end
 
-function get_mccs(arg, trees, γ, nit, resolve, preresolve)
+function get_mccs(arg, trees, γ, nit, resolve, preresolve; verbose)
 	Md = length(leaves(first(values(trees)))) / nit
-	oa = OptArgs(; γ, resolve, Md = Md)
+	oa = OptArgs(; γ, resolve, Md = Md, verbose)
 
 	rMCCs = ARGTools.MCCs_from_arg(arg, 1, 2)
 	iMCCs1 = computeMCCs(trees, oa; preresolve)[1,2]
