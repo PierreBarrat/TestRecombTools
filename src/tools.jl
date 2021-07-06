@@ -6,6 +6,7 @@ end
 
 function parse_outfolder(of)
 	sof = String.(split(of, '_'))
+	# println("pof: $of")
 	args = Dict()
 	for s in sof
 		if s[1] == 'N'
@@ -83,7 +84,7 @@ function read_simulate_mccs(file)
 end
 
 function _read_simulate_results(folder, func)
-	args = parse_outfolder(folder)
+	args = parse_outfolder(basename(folder))
 	dat = zeros(Float64, 3)
 	Z = 0
 	for f in readdir(folder)

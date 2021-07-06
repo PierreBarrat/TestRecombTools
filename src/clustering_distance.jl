@@ -36,6 +36,12 @@ function _compute_clustering_distances(folder, sim)
 			for i in eachindex(rMCCs)
 				dat[1] += sim(rMCCs[i], nMCCs[i])
 				dat[2] += sim(rMCCs[i], iMCCs[i])
+				# try
+				# catch
+				# 	println(length(iMCCs))
+				# 	println(length(rMCCs))
+				# 	println(folder)
+				# end
 				dat[3] += sim(nMCCs[i], iMCCs[i])
 				Z += 1
 			end
