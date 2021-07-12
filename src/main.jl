@@ -107,7 +107,7 @@ end
 
 function simulate_trees(N, n, ρ, simtype, cutoff, K)
 	# ARG
-	arg = ARGTools.SimulateARG.simulate(N, get_r(ρ, n, N, simtype), n; K)
+	arg = ARGTools.SimulateARG.simulate(N, get_r(ρ, n, N, simtype), n; K, simtype)
 	# Trees
 	ts = ARGTools.trees_from_ARG(arg)
 	trees = Dict(i => t for (i,t) in enumerate(ts))

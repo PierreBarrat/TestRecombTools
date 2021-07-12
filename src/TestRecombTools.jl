@@ -28,5 +28,6 @@ include("eval_gamma.jl")
 export eval_gamma
 
 include("clustering_distance.jl")
+include("splits.jl")
 
 end # module

@@ -67,15 +67,45 @@ function consistent_mcc_triplets(M12, M13, M23, trees)
 	return Z == 0 ? 0.0 : s / Z
 end
 
-function read_simulate_mccs(file)
-	MCCs = []
-	mcc = []
-	for l in eachline(file)
-		if l[1] == '#'
-			mcc != [] && push!(MCCs, mcc)
-			mcc = []
-		else
-			push!(mcc, String.(split(l, ',')))
+function read_simulate_trees(file::AbstractString, Nrep = -1)
+	trees = []
+	nwk = ""
+	rep = 0
+	open(file, "r") do f
+		for l in eachline(f)
+			if l[1] == '#'
+				nwk != "" && push!(trees, TreeTools.node2tree(parse_newick(nwk)))
+				nwk = ""
+				if Nrep > 0 && rep >= Nrep
+					break
+				end
+				rep += 1
+			else
+				nwk *= l
+			end
+		end
+	end
+	nwk != "" && push!(trees, TreeTools.node2tree(parse_newick(nwk)))
+
+	return trees
+end
+
+function read_simulate_mccs(file::AbstractString, Nrep = -1)
+	MCCs = Vector{Vector{Vector{String}}}(undef, 0)
+	mcc = Vector{Vector{String}}(undef, 0)
+	rep = 0
+	open(file, "r") do f
+		for l in eachline(f)
+			if l[1] == '#'
+				mcc != [] && push!(MCCs, mcc)
+				mcc = []
+				if Nrep > 0 && rep >= Nrep
+					break
+				end
+				rep += 1
+			else
+				push!(mcc, String.(split(l, ',')))
+			end
 		end
 	end
 	mcc != [] && push!(MCCs, mcc)
@@ -83,7 +113,7 @@ function read_simulate_mccs(file)
 	return MCCs
 end
 
-function _read_simulate_results(folder, func)
+function _read_simulate_results(folder::AbstractString, func::Function)
 	args = parse_outfolder(basename(folder))
 	dat = zeros(Float64, 3)
 	Z = 0

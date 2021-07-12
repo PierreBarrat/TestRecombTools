@@ -120,6 +120,8 @@ function get_r(ρ, n, N, simtype::Symbol)
         return ρ * n / N
     elseif simtype == :yule
         return ρ / N
+    elseif simtype == :flu
+    	return ρ * n^0.2 / N
     else
         @error "Unrecognized `simtype`."
     end
