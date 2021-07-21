@@ -210,3 +210,15 @@ function remove_branches!(t::Tree, c::Real, N::Int)
 end
 
 
+
+function get_r(ρ, n, N, simtype::Symbol)
+    if simtype == :kingman
+        return ρ * n / N
+    elseif simtype == :yule
+        return ρ / N
+    elseif simtype == :flu
+    	return ρ * n^0.2 / N
+    else
+        @error "Unrecognized `simtype`."
+    end
+end

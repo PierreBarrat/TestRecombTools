@@ -1,21 +1,23 @@
 """
 	simulate_compute_clustering_distances(dir, sim)
 """
-function simulate_compute_clustering_distances(dir, sim)
+function simulate_compute_clustering_distances(dir, sim; filter = Dict(), Nrep=-1)
 	df = DataFrame()
 	N = length(readdir(dir))
 	for (i,f) in enumerate(readdir(dir, join=true))
 		print("$i / $N")
 		if !isnothing(match(r"MCCs_", basename(f)))
 			args = parse_outfolder(basename(f))
-			dat = _compute_clustering_distances(f, sim)
-			args[:naive_to_real] = dat[1]
-			args[:inferred_to_real] = dat[2]
-			args[:inferred_to_naive] = dat[3]
-			for x in names(df)
-		       df[!,x] = convert(Vector{Union{Missing, eltype(df[!,x])}}, df[!,x])
-       		end
-			append!(df, DataFrame(args))
+			if mapreduce(x->in(args[x], filter[x]), *, keys(filter), init=true)
+				dat = _compute_clustering_distances(f, sim, Nrep)
+				args[:naive_to_real] = dat[1]
+				args[:inferred_to_real] = dat[2]
+				args[:inferred_to_naive] = dat[3]
+				for x in names(df)
+			       df[!,x] = convert(Vector{Union{Missing, eltype(df[!,x])}}, df[!,x])
+	       		end
+				append!(df, DataFrame(args))
+			end
 		end
 		print("                    \r")
 	end
@@ -23,16 +25,16 @@ function simulate_compute_clustering_distances(dir, sim)
 	return sort!(df, [:ρ])
 end
 
-function _compute_clustering_distances(folder, sim)
+function _compute_clustering_distances(folder, sim, Nrep)
 	# args = parse_outfolder(folder)
 	dat = zeros(Union{Missing,Float64}, 3)
 	Z = 0
 	for f in readdir(folder)
 		if !isnothing(match(r"rep", f)) && length(readdir(folder * "/" * f)) >= 3
 			rep = parse(Int, f[4:end])
-			rMCCs = read_simulate_mccs("$(folder)/$(f)/realMCCs.dat")
-			nMCCs = read_simulate_mccs("$(folder)/$(f)/naiveMCCs.dat")
-			iMCCs = read_simulate_mccs("$(folder)/$(f)/inferredMCCs.dat")
+			rMCCs = read_simulate_mccs("$(folder)/$(f)/realMCCs.dat", Nrep)
+			nMCCs = read_simulate_mccs("$(folder)/$(f)/naiveMCCs.dat", Nrep)
+			iMCCs = read_simulate_mccs("$(folder)/$(f)/inferredMCCs.dat", Nrep)
 			for i in eachindex(rMCCs)
 				dat[1] += sim(rMCCs[i], nMCCs[i])
 				dat[2] += sim(rMCCs[i], iMCCs[i])
