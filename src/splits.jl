@@ -1,8 +1,9 @@
 function _read_simulate_splits(folder::AbstractString, Nrep=200)
 	args = parse_outfolder(basename(folder))
-	TP = zeros(Float64, 3)
-	power = zeros(Float64, 3)
-	Z = 0
+	TP = zeros(Union{Missing,Float64}, 3)
+	power = zeros(Union{Missing, Float64}, 3)
+	Z_ppv = zeros(Int, 3)
+	Z_power = 0
 	for f in readdir(folder)
 		if !isnothing(match(r"rep", f)) && length(readdir(folder * "/" * f)) >= 3
 			trees1 = read_simulate_trees("$(folder)/$(f)/tree1.nwk", Nrep)
@@ -17,24 +18,39 @@ function _read_simulate_splits(folder::AbstractString, Nrep=200)
 				nS_r = RecombTools.new_splits(t1, rM, t2)
 				nS_n = RecombTools.new_splits(t1, nM, t2)
 
-				TP[1] += count(in(nS_r), nS_i) / length(nS_i)
-				TP[2] += count(in(nS_r), nS_r) / length(nS_r)
-				TP[3] += count(in(nS_r), nS_n) / length(nS_n)
+				TP_i = count(in(nS_r), nS_i)
+				TP_r = count(in(nS_r), nS_r)
+				TP_n = count(in(nS_r), nS_n)
+
+				if length(nS_i) != 0
+					TP[1] += TP_i / length(nS_i)
+					Z_ppv[1] += 1
+				end
+				if length(nS_r) != 0
+					TP[2] += TP_r / length(nS_r)
+					Z_ppv[2] += 1
+				end
+				if length(nS_n) != 0
+					TP[3] += TP_n / length(nS_n)
+					Z_ppv[3] += 1
+				end
 
 				missing_splits = 2*length(leaves(t1)) - 1 - length(nodes(t1))
-				power[1] += count(in(nS_r), nS_i) / missing_splits
-				power[2] += count(in(nS_r), nS_r) / missing_splits
-				power[3] += count(in(nS_r), nS_n) / missing_splits
-				Z += 1
+				power[1] += TP_i / missing_splits
+				power[2] += TP_r / missing_splits
+				power[3] += TP_n / missing_splits
+				Z_power += 1
 				rep > Nrep && break
 			end
-			# Z += length(rMCCs)
 		end
 	end
-	if Z == 0
-		TP = [missing, missing, missing]
+	for (i,z) in enumerate(Z_ppv)
+		if z < Nrep / 5
+			TP[i] = missing
+			power[i] = missing
+		end
 	end
-	return TP / Z, power / Z
+	return TP ./ Z_ppv, power / Z_power
 end
 
 """

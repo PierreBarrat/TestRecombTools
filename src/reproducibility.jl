@@ -36,3 +36,28 @@ function eval_reproducibility(nit, N, n, ρ, oa; Nrep = 10, cutoff = 0.)
 	end
 	vec(mean(dat, dims=1))
 end
+
+"""
+	remove_low_bootstrap!(tree::Tree, bmin)
+"""
+function remove_low_bootstrap!(tree::Tree, bmin)
+	for n in internals(tree)
+		if !n.isroot
+			bs = tryparse(Int, n.label)
+			if isnothing(bs) || bs < bmin
+				delete_node!(n)
+			end
+		end
+	end
+
+	node2tree!(tree, tree.root)
+end
+
+function remove_low_bootstrap(t::Tree, bmin)
+	tree = copy(t)
+	remove_low_bootstrap!(tree, bmin)
+	return tree
+end
+function remove_low_bootstrap(treefile::AbstractString, bmin)
+	remove_low_bootstrap(read_tree(treefile), bmin)
+end
