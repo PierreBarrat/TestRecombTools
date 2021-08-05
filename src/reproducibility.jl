@@ -43,8 +43,8 @@ end
 function remove_low_bootstrap!(tree::Tree, bmin)
 	for n in internals(tree)
 		if !n.isroot
-			bs = tryparse(Int, n.label)
-			if isnothing(bs) || bs < bmin
+			bs = tryparse(Int, split(n.label, "__")[1])
+			if !isnothing(bs) && bs < bmin
 				delete_node!(n)
 			end
 		end
@@ -53,11 +53,14 @@ function remove_low_bootstrap!(tree::Tree, bmin)
 	node2tree!(tree, tree.root)
 end
 
+
 function remove_low_bootstrap(t::Tree, bmin)
 	tree = copy(t)
 	remove_low_bootstrap!(tree, bmin)
 	return tree
 end
 function remove_low_bootstrap(treefile::AbstractString, bmin)
-	remove_low_bootstrap(read_tree(treefile), bmin)
+	t = read_tree(treefile)
+	remove_low_bootstrap!(t, bmin)
+	return t
 end

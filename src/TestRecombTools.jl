@@ -5,6 +5,7 @@ using Clustering
 using CSV
 using DataFrames
 using Distributions
+using JSON3
 using RecombTools
 using Setfield
 using StatsBase
@@ -29,5 +30,6 @@ export eval_gamma
 
 include("clustering_distance.jl")
 include("splits.jl")
+include("interaction_w_auspice.jl")
 
 end # module
