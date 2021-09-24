@@ -30,6 +30,8 @@ export eval_gamma
 
 include("clustering_distance.jl")
 include("splits.jl")
+include("eval_branches.jl")
+include("reassortments.jl")
 include("interaction_w_auspice.jl")
 
 end # module

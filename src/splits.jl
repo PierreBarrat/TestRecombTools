@@ -1,5 +1,5 @@
 function _read_simulate_splits(folder::AbstractString, Nrep=200)
-	args = parse_outfolder(basename(folder))
+	# args = parse_outfolder(basename(folder))
 	TP = zeros(Union{Missing,Float64}, 3)
 	power = zeros(Union{Missing, Float64}, 3)
 	Z_ppv = zeros(Int, 3)

@@ -113,6 +113,36 @@ function read_simulate_mccs(file::AbstractString, Nrep = -1)
 	return MCCs
 end
 
+function read_simulate_results(indir::AbstractString; filter = Dict(), Nrep = 1, verbose=true)
+	df = DataFrame()
+	N = length(readdir(indir))
+	for (i, mccfolder) in enumerate(readdir(indir, join=true))
+		verbose && print("$i / $N")
+		if !isnothing(match(r"MCCs_", mccfolder))
+			args = parse_outfolder(basename(mccfolder))
+			if mapreduce(x->in(args[x], filter[x]), *, keys(filter), init=true)
+				for repfile in readdir(mccfolder)
+					if !isnothing(match(r"rep",repfile)) && length(readdir(mccfolder * "/" *repfile)) >= 3
+						dat = Dict()
+						dat[:t1] = read_simulate_trees("$(mccfolder)/$(repfile)/tree1.nwk", Nrep)
+						dat[:t2] = read_simulate_trees("$(mccfolder)/$(repfile)/tree2.nwk", Nrep)
+						dat[:rMCCs] = read_simulate_mccs("$(mccfolder)/$(repfile)/realMCCs.dat", Nrep)
+						dat[:nMCCs] = read_simulate_mccs("$(mccfolder)/$(repfile)/naiveMCCs.dat", Nrep)
+						dat[:iMCCs] = read_simulate_mccs("$(mccfolder)/$(repfile)/inferredMCCs.dat", Nrep)
+						for (k,v) in dat
+							args[k] = v
+						end
+						append!(df, DataFrame(args))
+					end
+				end
+			end
+		end
+		print("                    \r")
+	end
+
+	return sort!(df, [:ρ])
+end
+
 function _read_simulate_results(folder::AbstractString, func::Function)
 	args = parse_outfolder(basename(folder))
 	dat = zeros(Float64, 3)
