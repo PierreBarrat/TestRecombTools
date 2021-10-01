@@ -3,7 +3,7 @@
 
 function measure_reproducibility(
 	sim, arg::ARG, nit, oa::OptArgs;
-	cutoff=0, preresolve=false, Nrep = 10,
+	cutoff=0, preresolve=false,
 )
 	ts = ARGTools.trees_from_ARG(arg)
 	trees = Dict(i => t for (i,t) in enumerate(ts))
@@ -24,8 +24,10 @@ function measure_reproducibility(
 	return sim(t1, MCCs1, MCCs2), sim(t1, MCCs1, MCCs_naive), sim(t1, MCCs1, rMCC)
 end
 
-function eval_reproducibility(nit, N, n, ρ, oa; Nrep = 10, cutoff = 0.)
-	sim = varinfo_similarity
+function eval_reproducibility(
+	nit, N, n, ρ, oa;
+	Nrep = 10, cutoff = 0., sim = varinfo_similarity
+)
 	dat = zeros(Nrep, 3)
 	for rep in 1:Nrep
 		arg = ARGTools.SimulateARG.simulate(N, get_r(ρ, n, N, :flu), n)
