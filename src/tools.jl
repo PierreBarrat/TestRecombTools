@@ -1,6 +1,6 @@
-function make_outfolder_name(N, n, ρ, cutoff, γ, nit, resolve, preresolve)
+function make_outfolder_name(N, n, ρ, cutoff, γ, nit, resolve)
 	out = "MCCs_N$(N)_n$(n)_rho$(round(ρ, sigdigits=2))_cutoff$(cutoff)"
-	out *= "_gamma$(γ)_nit$(ceil(Int, nit(n)))_resolve$(resolve)_preresolve$(preresolve)"
+	out *= "_gamma$(γ)_nit$(nit)_resolve$(resolve)"
 	return out
 end
 

@@ -15,7 +15,6 @@
 	γ = 2,
 	nit = n->n/10,
 	resolve = true,
-	preresolve = false,
 	# Others
 	Nrep = 250,
 	write = true,
@@ -32,20 +31,19 @@ function simulate(;
 	K = 2,
 	# Inference
 	γ = 2,
-	nit = n->n/10,
+	nit = 100,
 	resolve = true,
-	preresolve = K > 2,
 	# Others
 	Nrep = 250,
 	write = true,
 	verbose = false,
-	outfolder = make_outfolder_name(N, n, ρ, cutoff, γ, nit, resolve, preresolve),
+	outfolder = make_outfolder_name(N, n, ρ, cutoff, γ, nit, resolve),
 )
 	for rep in 1:Nrep
 		arg, trees = simulate_trees(N, n, ρ, simtype, cutoff, K)
-		allMCCs = get_mccs(arg, trees, γ, ceil(Int, nit(n)), resolve, preresolve; verbose) # array of length 4
+		allMCCs = get_mccs(arg, trees, γ, nit, resolve; verbose) # array of length 4
 		write && write_mccs(outfolder, rep, allMCCs, "a")
-		write && write_trees(outfolder, rep, values(trees), "a")
+		write && write_trees(outfolder, rep, trees, "a")
 	end
 
 	return nothing
@@ -93,14 +91,12 @@ function write_mccs(outfolder, id, allMCCs, mode="a")
 	TreeKnit.write_mccs(of, allMCCs[3], "a")
 end
 
-function get_mccs(arg, trees, γ, nit, resolve, preresolve; verbose)
-	Md = length(leaves(first(values(trees)))) / nit
-	oa = OptArgs(; γ, resolve, Md = Md, verbose)
+function get_mccs(arg, trees, γ, nit, resolve; verbose)
+	oa = OptArgs(; γ, resolve, nMCMC = nit, verbose)
 
 	rMCCs = ARGTools.MCCs_from_arg(arg, 1, 2)
-	iMCCs1 = computeMCCs(trees, oa; preresolve)[1,2]
-	# iMCCs2 = computeMCCs(trees, oa; preresolve)
-	naiveMCCs = computeMCCs(trees, oa; preresolve, naive=true)[1,2]
+	iMCCs1 = computeMCCs(trees[1], trees[2], oa)
+	naiveMCCs = computeMCCs(trees[1], trees[2], oa; naive=true)
 
 	return rMCCs, naiveMCCs, iMCCs1 #, iMCCs2
 end
@@ -109,10 +105,10 @@ function simulate_trees(N, n, ρ, simtype, cutoff, K)
 	# ARG
 	arg = ARGTools.SimulateARG.simulate(N, get_r(ρ, n, N, simtype), n; K, simtype)
 	# Trees
-	ts = ARGTools.trees_from_ARG(arg)
-	trees = Dict(i => t for (i,t) in enumerate(ts))
+	trees = ARGTools.trees_from_ARG(arg)
+	# trees = Dict(i => t for (i,t) in enumerate(ts))
 	if cutoff > 0
-		for t in values(trees)
+		for t in trees
 			remove_branches!(t, Exponential(cutoff * N))
 		end
 	end
@@ -219,8 +215,7 @@ end
     Md=10, lk_sort=true,
     cutoff = 0.,
     Nrep = 1,
-    preresolve = true,
-    sfields::Tuple = (:ρ,:cutoff, :preresolve),
+    sfields::Tuple = (:ρ,:cutoff)
     out = "",
     verbose=false
 )
@@ -231,15 +226,14 @@ function eval_runopt(γ::Real, N::Int64, n::Int64, ρ::Float64, simtype::Symbol;
     Md=10, lk_sort=true,
     cutoff = 0.,
     Nrep = 1,
-    preresolve = true,
-    sfields::Tuple = (:ρ,:cutoff, :preresolve),
+    sfields::Tuple = (:ρ,:cutoff),
     out = "",
     verbose=false
 )
     #
     args = Dict(:γ=>γ, :N=>N, :n=>n, :ρ=>ρ, :simtype=>simtype,
         :Md=>Md, :lk_sort=>lk_sort,
-        :cutoff=>cutoff, :preresolve=>preresolve,
+        :cutoff=>cutoff,
     )
     #
     dat = DataFrame(df_fields())
@@ -266,7 +260,6 @@ function eval_runopt(γ::Real, N::Int64, n::Int64, ρ::Float64, simtype::Symbol;
             try
                 MCCs = computeMCCs!(
                     trees, oa;
-                    preresolve=preresolve,
                 )
                 return MCCs
             catch err
@@ -299,8 +292,7 @@ end
         Md=10, lk_sort=true,
         cutoff = 0.,
         Nrep = 1,
-        preresolve = true,
-        sfields::Tuple = (:ρ,:cutoff, :preresolve),
+        sfields::Tuple = (:ρ,:cutoff),
         out = "",
         verbose=false
     )
@@ -311,15 +303,14 @@ function eval_runopt_manytrees(γ::Real, N::Int, n::Int, ρ::Float64, simtype::S
      Md=10, lk_sort=true,
     cutoff = 0.,
     Nrep = 1,
-    preresolve = true,
-    sfields::Tuple = (:ρ,:cutoff, :preresolve),
+    sfields::Tuple = (:ρ,:cutoff),
     out = "",
     verbose=false
 )
     #
     args = Dict(:γ=>γ, :N=>N, :n=>n, :ρ=>ρ, :simtype=>simtype,
         :Md=>Md, :lk_sort=>lk_sort,
-        :cutoff=>cutoff, :preresolve=>preresolve,
+        :cutoff=>cutoff,
     )
     #
     dat = DataFrame(df_fields())
@@ -345,7 +336,7 @@ function eval_runopt_manytrees(γ::Real, N::Int, n::Int, ρ::Float64, simtype::S
                 verbose=verbose,
             )
             try
-                MCCs = computeMCCs!(trees, oa; preresolve=preresolve)
+                MCCs = computeMCCs!(trees, oa;)
                 return MCCs
             catch err
                 mkpath("tmp")

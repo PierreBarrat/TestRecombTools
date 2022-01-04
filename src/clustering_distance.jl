@@ -5,7 +5,7 @@ function simulate_compute_clustering_distances(dir, sim; filter = Dict(), Nrep=-
 	df = DataFrame()
 	N = length(readdir(dir))
 	for (i,f) in enumerate(readdir(dir, join=true))
-		print("$i / $N")
+		print("$i / $N - $f")
 		if !isnothing(match(r"MCCs_", basename(f)))
 			args = parse_outfolder(basename(f))
 			if mapreduce(x->in(args[x], filter[x]), *, keys(filter), init=true)
@@ -19,7 +19,7 @@ function simulate_compute_clustering_distances(dir, sim; filter = Dict(), Nrep=-
 				append!(df, DataFrame(args))
 			end
 		end
-		print("                    \r")
+		print("                                            \r")
 	end
 
 	return sort!(df, [:ρ])
@@ -84,7 +84,16 @@ end
 varinfo_similarity(t::Tree, MCCs... ; scale=true) = varinfo_similarity(MCCs...; scale)
 function varinfo_similarity(MCCs...; scale=true)
 	leaves = sort(vcat(first(MCCs)...))
-	assignments = [assignment_vector(leaves, mccs) for mccs in MCCs]
+	assignments = try
+		[assignment_vector(leaves, mccs) for mccs in MCCs]
+	catch err
+		println(MCCs[1])
+		println()
+		println(MCCs[2])
+		println()
+		println(leaves)
+		error(err)
+	end
 	out = 0
 	Z = 0
 	for i in 1:length(MCCs), j in (i+1):length(MCCs)
