@@ -71,7 +71,7 @@ Return fraction of branches in `t` that are predicted to be in an mcc for both `
 function branch_similarity(t::Tree, MCC1, MCC2)
 	s = 0
 	for n in nodes(t)
-		if RecombTools.is_branch_in_mccs(n, MCC1) == RecombTools.is_branch_in_mccs(n, MCC2)
+		if TreeKnit.is_branch_in_mccs(n, MCC1) == TreeKnit.is_branch_in_mccs(n, MCC2)
 			s += 1
 		end
 	end
@@ -81,8 +81,8 @@ end
 """
 	varinfo_similarity(MCCs...)
 """
-varinfo_similarity(t::Tree, MCCs...) = varinfo_similarity(MCCs...)
-function varinfo_similarity(MCCs...)
+varinfo_similarity(t::Tree, MCCs... ; scale=true) = varinfo_similarity(MCCs...; scale)
+function varinfo_similarity(MCCs...; scale=true)
 	leaves = sort(vcat(first(MCCs)...))
 	assignments = [assignment_vector(leaves, mccs) for mccs in MCCs]
 	out = 0
@@ -90,6 +90,9 @@ function varinfo_similarity(MCCs...)
 	for i in 1:length(MCCs), j in (i+1):length(MCCs)
 		out += Clustering.varinfo(assignments[i], assignments[j])
 		Z += 1
+	end
+	if scale
+		out /= log(length(leaves))
 	end
 	return out / Z
 end

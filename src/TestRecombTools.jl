@@ -6,7 +6,7 @@ using CSV
 using DataFrames
 using Distributions
 using JSON3
-using RecombTools
+using TreeKnit
 using Setfield
 using StatsBase
 using TreeTools

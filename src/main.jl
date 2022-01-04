@@ -76,21 +76,21 @@ function write_mccs(outfolder, id, allMCCs, mode="a")
 	open(of, mode) do w
 		id > 1 ? write(w, "\n# rep $(id)\n") : write(w, "# rep $(id)\n")
 	end
-	RecombTools.write_mccs(of, allMCCs[1], "a")
+	TreeKnit.write_mccs(of, allMCCs[1], "a")
 
 	# Naive
 	of = outfolder * "/rep$(dir_id)/naiveMCCs.dat"
 	open(of, mode) do w
 		id > 1 ? write(w, "\n# rep $(id)\n") : write(w, "# rep $(id)\n")
 	end
-	RecombTools.write_mccs(of, allMCCs[2], "a")
+	TreeKnit.write_mccs(of, allMCCs[2], "a")
 
 	# Inferred
 	of = outfolder * "/rep$(dir_id)/inferredMCCs.dat"
 	open(of, mode) do w
 		id > 1 ? write(w, "\n# rep $(id)\n") : write(w, "# rep $(id)\n")
 	end
-	RecombTools.write_mccs(of, allMCCs[3], "a")
+	TreeKnit.write_mccs(of, allMCCs[3], "a")
 end
 
 function get_mccs(arg, trees, γ, nit, resolve, preresolve; verbose)
@@ -391,8 +391,8 @@ function _eval_mcc_inf(rMCC, iMCC, t1::Tree)
     τc_p = 0.; τnc_p = 0.; τc_n = 0.; τnc_n = 0.
     νc_p = 0.; νnc_p = 0.; νc_n = 0.; νnc_n = 0.
     for n in Iterators.filter(x->!x.isroot, values(t1.lnodes))
-        if RecombTools.is_branch_in_mccs(n,iMCC) # Branch predicted to be shared with the other tree
-            if RecombTools.is_branch_in_mccs(n, rMCC) # Correct prediction
+        if TreeKnit.is_branch_in_mccs(n,iMCC) # Branch predicted to be shared with the other tree
+            if TreeKnit.is_branch_in_mccs(n, rMCC) # Correct prediction
                 τc_p += n.tau
                 νc_p += 1.
             else
@@ -400,7 +400,7 @@ function _eval_mcc_inf(rMCC, iMCC, t1::Tree)
                 νc_n += 1.
             end
         else # Branch predicted to not be shared with the other tree
-            if !RecombTools.is_branch_in_mccs(n, rMCC) # Correct prediction
+            if !TreeKnit.is_branch_in_mccs(n, rMCC) # Correct prediction
                 τnc_p += n.tau
                 νnc_p += 1.
             else

@@ -75,6 +75,41 @@ git-tree-sha1 = "08c8b6831dc00bfea825826be0bc8336fc369860"
 uuid = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
 version = "1.0.2"
 
+[[Comonicon]]
+deps = ["ComoniconBuilder", "ComoniconOptions", "ComoniconTargetExpr", "ComoniconTypes", "ComoniconZSHCompletion", "Configurations", "ExproniconLite", "Markdown", "Pkg"]
+git-tree-sha1 = "3ad48ea7ea9ec4659514c95c26f81bdd89894d12"
+uuid = "863f3e99-da2a-4334-8734-de3dacbe5542"
+version = "0.11.7"
+
+[[ComoniconBuilder]]
+deps = ["ComoniconOptions", "ComoniconTypes", "ComoniconZSHCompletion", "Libdl", "Logging", "PackageCompiler"]
+git-tree-sha1 = "9a718f5b8a2121b572eb3c53f9319c169341e154"
+uuid = "0acea522-3a8c-4b93-9211-1fc67cbf95d9"
+version = "0.1.4"
+
+[[ComoniconOptions]]
+deps = ["Configurations", "TOML"]
+git-tree-sha1 = "30408d3b8e4eefbfefa60447c6eaa46e820eb808"
+uuid = "a25bc8ac-9d24-42b2-8edd-3d267ec19fc5"
+version = "0.1.2"
+
+[[ComoniconTargetExpr]]
+deps = ["ComoniconOptions", "ComoniconTypes", "ExproniconLite"]
+git-tree-sha1 = "7bd6c2a515cf2fc007ffe61b5de21a12ad120baa"
+uuid = "d6dfd36b-42f3-4a9f-a1cb-6f1a052fed42"
+version = "0.2.4"
+
+[[ComoniconTypes]]
+git-tree-sha1 = "3ed67384a353e88a9140db8bf274aee75af9d36a"
+uuid = "d0eb39ce-029e-40d1-add6-e32b3165f6a3"
+version = "0.2.0"
+
+[[ComoniconZSHCompletion]]
+deps = ["ComoniconTypes"]
+git-tree-sha1 = "225ff13b22f4c88aeb70ce20e89b016c1897790b"
+uuid = "dcf03e4a-d036-4ede-96c9-024e9e9eed12"
+version = "0.2.0"
+
 [[Compat]]
 deps = ["Base64", "Dates", "DelimitedFiles", "Distributed", "InteractiveUtils", "LibGit2", "Libdl", "LinearAlgebra", "Markdown", "Mmap", "Pkg", "Printf", "REPL", "Random", "SHA", "Serialization", "SharedArrays", "Sockets", "SparseArrays", "Statistics", "Test", "UUIDs", "Unicode"]
 git-tree-sha1 = "344f143fa0ec67e47917848795ab19c6a455f32c"
@@ -84,6 +119,12 @@ version = "3.32.0"
 [[CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
+
+[[Configurations]]
+deps = ["ExproniconLite", "OrderedCollections", "TOML"]
+git-tree-sha1 = "79e812c535bb9780ba00f3acba526bde5652eb13"
+uuid = "5218b696-f38b-4ac9-8b61-a12ec717816d"
+version = "0.16.6"
 
 [[ConstructionBase]]
 deps = ["LinearAlgebra"]
@@ -150,13 +191,18 @@ version = "0.8.5"
 
 [[Documenter]]
 deps = ["ANSIColoredPrinters", "Base64", "Dates", "DocStringExtensions", "IOCapture", "InteractiveUtils", "JSON", "LibGit2", "Logging", "Markdown", "REPL", "Test", "Unicode"]
-git-tree-sha1 = "350dced36c11f794c6c4da5dc6493ec894e50c16"
+git-tree-sha1 = "f425293f7e0acaf9144de6d731772de156676233"
 uuid = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-version = "0.27.5"
+version = "0.27.10"
 
 [[Downloads]]
 deps = ["ArgTools", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
+
+[[ExproniconLite]]
+git-tree-sha1 = "8b08cc88844e4d01db5a2405a08e9178e19e479e"
+uuid = "55351af7-c7e9-48d6-89ff-24e801d99491"
+version = "0.6.13"
 
 [[FASTX]]
 deps = ["Automa", "BioGenerics", "BioSequences", "BioSymbols", "TranscodingStreams"]
@@ -220,15 +266,19 @@ version = "1.3.0"
 
 [[JSON]]
 deps = ["Dates", "Mmap", "Parsers", "Unicode"]
-git-tree-sha1 = "81690084b6198a2e1da36fcfda16eeca9f9f24e4"
+git-tree-sha1 = "8076680b162ada2a031f707ac7b4953e30667a37"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
-version = "0.21.1"
+version = "0.21.2"
 
 [[JSON3]]
 deps = ["Dates", "Mmap", "Parsers", "StructTypes", "UUIDs"]
 git-tree-sha1 = "b3e5984da3c6c95bcf6931760387ff2e64f508f3"
 uuid = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 version = "1.9.1"
+
+[[LazyArtifacts]]
+deps = ["Artifacts", "Pkg"]
+uuid = "4af54fe1-eca0-43a8-85a7-787d91b784e3"
 
 [[LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
@@ -320,11 +370,17 @@ git-tree-sha1 = "4dd403333bcf0909341cfe57ec115152f937d7d8"
 uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
 version = "0.11.1"
 
+[[PackageCompiler]]
+deps = ["Artifacts", "LazyArtifacts", "Libdl", "Pkg", "RelocatableFolders", "UUIDs"]
+git-tree-sha1 = "a16924b37299cc7d6106fac255b44a8c79c7c21f"
+uuid = "9b87118b-4619-50d2-8e1e-99f35a4d4d9d"
+version = "1.7.7"
+
 [[Parameters]]
 deps = ["OrderedCollections", "UnPack"]
-git-tree-sha1 = "2276ac65f1e236e0a6ea70baff3f62ad4c625345"
+git-tree-sha1 = "34c0e9ad262e5f7fc75b10a9952ca7692cfc5fbe"
 uuid = "d96e819e-fc66-5662-9728-84c9c7592b0a"
-version = "0.12.2"
+version = "0.12.3"
 
 [[Parsers]]
 deps = ["Dates"]
@@ -372,18 +428,16 @@ uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 deps = ["Serialization"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
-[[RecombTools]]
-deps = ["DataFrames", "Documenter", "LightGraphs", "Parameters", "Setfield", "TreeTools"]
-git-tree-sha1 = "927264cd4f241b6b07da68e0c35f25fe95d3d931"
-repo-rev = "master"
-repo-url = "../RecombTools"
-uuid = "03f602be-98a1-4bb2-9504-fbd3406624a7"
-version = "0.1.0"
-
 [[Reexport]]
 git-tree-sha1 = "5f6c21241f0f655da3952fd60aa18477cf96c220"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
 version = "1.1.0"
+
+[[RelocatableFolders]]
+deps = ["SHA", "Scratch"]
+git-tree-sha1 = "cdbd3b1338c72ce29d9584fdbe9e9b70eeb5adca"
+uuid = "05181044-ff0b-4ac5-8273-598c1e38db00"
+version = "0.1.3"
 
 [[Requires]]
 deps = ["UUIDs"]
@@ -416,6 +470,12 @@ deps = ["Libdl", "SIMD"]
 git-tree-sha1 = "9cc2955f2a254b18be655a4ee70bc4031b2b189e"
 uuid = "7b38b023-a4d7-4c5e-8d43-3f3097f304eb"
 version = "0.3.0"
+
+[[Scratch]]
+deps = ["Dates"]
+git-tree-sha1 = "0b4b7f1393cff97c33891da2a0bf69c6ed241fda"
+uuid = "6c6a2e73-6563-6170-7368-637461726353"
+version = "1.1.0"
 
 [[SentinelArrays]]
 deps = ["Dates", "Random"]
@@ -546,6 +606,14 @@ git-tree-sha1 = "72e3f94d9cfe40af24a47c2573f233ca73bfecbb"
 repo-rev = "main"
 repo-url = "https://github.com/PierreBarrat/TreeAlgs"
 uuid = "12935546-5c18-4ff8-8224-37e394524ca8"
+version = "0.1.0"
+
+[[TreeKnit]]
+deps = ["Comonicon", "Documenter", "Parameters", "Random", "Setfield", "TreeTools"]
+git-tree-sha1 = "34b9682a03cb323b663095edd3327926bdca5e04"
+repo-rev = "master"
+repo-url = "https://github.com/PierreBarrat/TreeKnit"
+uuid = "03f602be-98a1-4bb2-9504-fbd3406624a7"
 version = "0.1.0"
 
 [[TreeTools]]

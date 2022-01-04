@@ -17,6 +17,12 @@ function eval_reassortments(t::Tree, iMCCs, rMCCs)
 	return [TR, FR, MR, length(inf_reassortments), length(real_reassortments)]
 end
 
+function eval_reassortment(t::Tree, iMCC::Vector{<:AbstractString}, rMCCs)
+	inf_reassortment = lca(t, iMCC).label
+	real_reassortments = [lca(t, m).label for m in rMCCs]
+	return in(inf_reassortment, real_reassortments)
+end
+
 function _read_eval_reassortments(folder, Nrep)
 	out_inf = zeros(Union{Missing, Float64}, 5)
 	out_naive = zeros(Union{Missing, Float64}, 5)

@@ -2,6 +2,7 @@ function _read_simulate_splits(folder::AbstractString, Nrep=200)
 	# args = parse_outfolder(basename(folder))
 	TP = zeros(Union{Missing,Float64}, 3)
 	power = zeros(Union{Missing, Float64}, 3)
+	power_neg = zeros(Union{Missing, Float64}, 2)
 	Z_ppv = zeros(Int, 3)
 	Z_power = 0
 	for f in readdir(folder)
@@ -14,13 +15,16 @@ function _read_simulate_splits(folder::AbstractString, Nrep=200)
 
 			#
 			for (rep, (t1, t2, iM, rM, nM)) in enumerate(zip(trees1, trees2, iMCCs, rMCCs, nMCCs))
-				nS_i = RecombTools.new_splits(t1, iM, t2)
-				nS_r = RecombTools.new_splits(t1, rM, t2)
-				nS_n = RecombTools.new_splits(t1, nM, t2)
+				nS_i = TreeKnit.new_splits(t1, iM, t2)
+				nS_r = TreeKnit.new_splits(t1, rM, t2)
+				nS_n = TreeKnit.new_splits(t1, nM, t2)
 
 				TP_i = count(in(nS_r), nS_i)
 				TP_r = count(in(nS_r), nS_r)
 				TP_n = count(in(nS_r), nS_n)
+
+				FP_i = length(nS_i) - TP_i
+				FP_n = length(nS_n) - TP_n
 
 				if length(nS_i) != 0
 					TP[1] += TP_i / length(nS_i)
@@ -39,6 +43,9 @@ function _read_simulate_splits(folder::AbstractString, Nrep=200)
 				power[1] += TP_i / missing_splits
 				power[2] += TP_r / missing_splits
 				power[3] += TP_n / missing_splits
+
+				power_neg[1] += FP_i / missing_splits
+				power_neg[2] += FP_n / missing_splits
 				Z_power += 1
 				rep > Nrep && break
 			end
@@ -50,7 +57,7 @@ function _read_simulate_splits(folder::AbstractString, Nrep=200)
 			power[i] = missing
 		end
 	end
-	return TP ./ Z_ppv, power / Z_power
+	return TP ./ Z_ppv, power / Z_power, power_neg / Z_power
 end
 
 """
@@ -73,6 +80,9 @@ function read_simulate_splits(dir; filter = Dict(), Nrep = 200, verbose=true)
 				args[:power_splits_inferred] = dat[2][1]
 				args[:power_splits_real] = dat[2][2]
 				args[:power_splits_naive] = dat[2][3]
+				#
+				args[:power_neg_splits_inferred] = dat[3][1]
+				args[:power_neg_splits_naive] = dat[3][2]
 				for x in names(df)
 			       df[!,x] = convert(Vector{Union{Missing, eltype(df[!,x])}}, df[!,x])
 	       		end
