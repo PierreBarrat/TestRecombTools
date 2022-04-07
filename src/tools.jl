@@ -240,7 +240,9 @@ function remove_branches!(t::Tree, c::Real, N::Int)
 end
 
 
-
+#=
+!!! There should be a factor /2 everywhere...
+=#
 function get_r(ρ, n, N, simtype::Symbol)
     if simtype == :kingman
         return ρ * n / N
@@ -252,3 +254,10 @@ function get_r(ρ, n, N, simtype::Symbol)
         @error "Unrecognized `simtype`."
     end
 end
+
+#=
+Below is the correct way to get r from r⋆. I DID NOT use this for my simulations.
+T2 is the pairwise coalescence time --> population size.
+=#
+get_r_correct(rstar, n, T2, α) = rstar * (n/2)^α / T2
+
