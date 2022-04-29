@@ -5,7 +5,9 @@ using Clustering
 using CSV
 using DataFrames
 using Distributions
+using Interpolations
 using JSON3
+using ROC
 using TreeKnit
 using Setfield
 using StatsBase

@@ -63,6 +63,7 @@ function _read_eval_reassortments(folder, Nrep)
 		:nrea_inf => out_inf[4] / Z,
 		#
 		:nrea_real => out_inf[5] / Z,
+		:nrea_real_unscaled => out_inf[5],
 	)
 	return out
 end
@@ -86,4 +87,65 @@ function read_eval_reassortments(dir; filter = Dict(), Nrep = 200, verbose=true)
 	end
 
 	return sort!(df, [:ρ])
+end
+
+
+function eval_reassortments_w_confidence(t1::Tree, t2::Tree, iMCCs, rMCCs)
+	TR = 0 # true reassortments
+	FR = 0 # false reassortments
+	MR = 0 # missed reassortments
+	#
+	inf_reassortments = [lca(t1, m).label for m in iMCCs]
+	real_reassortments = [lca(t1, m).label for m in rMCCs]
+	#
+	out = zeros(Float64, length(inf_reassortments), 4)
+	for (i, R) in enumerate(inf_reassortments)
+		out[i, 1] = in(R, real_reassortments)
+		out[i, 2] = 1 - out[i,1]
+		out[i, 3] = TreeKnit.confidence_likelihood_ratio(iMCCs[i], t1, t2)
+		out[i, 4] = rand()
+	end
+	# Removing infinity scores - they correspond to MCCs that include the root
+	idx = findall(x->in(Inf, x), eachrow(out))
+	out = out[findall(i->!in(i, idx), 1:size(out,1)), :]
+	out
+end
+function _read_eval_reassortments_w_confidence(folder, Nrep)
+	out_inferred = []
+	out_naive = []
+	for f in readdir(folder)
+		if !isnothing(match(r"rep", f)) && length(readdir(folder * "/" * f)) >= 3
+			t1s = read_simulate_trees("$(folder)/$(f)/tree1.nwk", Nrep)
+			t2s = read_simulate_trees("$(folder)/$(f)/tree2.nwk", Nrep)
+			rMCCs = read_simulate_mccs("$(folder)/$(f)/realMCCs.dat", Nrep)
+			nMCCs = read_simulate_mccs("$(folder)/$(f)/naiveMCCs.dat", Nrep)
+			iMCCs = read_simulate_mccs("$(folder)/$(f)/inferredMCCs.dat", Nrep)
+			for (rmccs, nmccs, imccs, t1, t2) in zip(rMCCs, nMCCs, iMCCs, t1s, t2s)
+				out_ = eval_reassortments_w_confidence(t1, t2, imccs, rmccs)
+				push!(out_inferred, out_)
+			end
+		end
+	end
+	return out_inferred
+end
+
+function average_roc_curves(dat)
+	dx = 0.01
+	FP_grid = 0:dx:1
+	TP_ongrid = zeros(length(FP_grid))
+	Z = 1
+	for (j, d) in enumerate(dat)
+		curve = roc(d[:,4], Bool.(d[:,1]))
+		if isnothing(findfirst(isnan, curve.FPR)) # Discard ROC without false positives
+			itp = LinearInterpolation(
+				Interpolations.deduplicate_knots!(curve.FPR), curve.TPR
+			)
+			for (i, x) in enumerate(FP_grid)
+				TP_ongrid[i] += itp(x)
+			end
+			Z += 1
+		end
+	end
+
+	return FP_grid, TP_ongrid/Z
 end

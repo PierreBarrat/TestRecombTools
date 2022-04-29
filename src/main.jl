@@ -40,7 +40,9 @@ function simulate(;
 	outfolder = make_outfolder_name(N, n, ρ, cutoff, γ, nit, resolve),
 )
 	for rep in 1:Nrep
+		verbose && println("Simulating trees ... ")
 		arg, trees = simulate_trees(N, n, ρ, simtype, cutoff, K)
+		verbose && println("Inferring MCCs ... ")
 		allMCCs = get_mccs(arg, trees, γ, nit, resolve; verbose) # array of length 4
 		write && write_mccs(outfolder, rep, allMCCs, "a")
 		write && write_trees(outfolder, rep, trees, "a")

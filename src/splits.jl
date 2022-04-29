@@ -3,6 +3,7 @@ function _read_simulate_splits(folder::AbstractString, Nrep=200)
 	TP = zeros(Union{Missing,Float64}, 3)
 	power = zeros(Union{Missing, Float64}, 3)
 	power_neg = zeros(Union{Missing, Float64}, 2)
+	nb_missing_splits = 0
 	Z_ppv = zeros(Int, 3)
 	Z_power = 0
 	for f in readdir(folder)
@@ -40,6 +41,12 @@ function _read_simulate_splits(folder::AbstractString, Nrep=200)
 				end
 
 				missing_splits = 2*length(leaves(t1)) - 1 - length(nodes(t1))
+				# nb_missing_splits += missing_splits
+				nb_missing_splits += mapreduce(+, nodes(t1)) do n
+					ismissing(n.tau) ? 0. : n.tau
+				end
+
+
 				power[1] += TP_i / missing_splits
 				power[2] += TP_r / missing_splits
 				power[3] += TP_n / missing_splits
@@ -57,7 +64,7 @@ function _read_simulate_splits(folder::AbstractString, Nrep=200)
 			power[i] = missing
 		end
 	end
-	return TP ./ Z_ppv, power / Z_power, power_neg / Z_power
+	return TP ./ Z_ppv, power / Z_power, power_neg / Z_power, nb_missing_splits / Z_power
 end
 
 """
@@ -83,14 +90,15 @@ function read_simulate_splits(dir; filter = Dict(), Nrep = 200, verbose=true)
 				#
 				args[:power_neg_splits_inferred] = dat[3][1]
 				args[:power_neg_splits_naive] = dat[3][2]
+				#
+				args[:nb_missing_splits] = dat[4]
 				for x in names(df)
 			       df[!,x] = convert(Vector{Union{Missing, eltype(df[!,x])}}, df[!,x])
 	       		end
 				append!(df, DataFrame(args))
 			end
 		end
-		print("                    \r")
+		verbose && print("                    \r")
 	end
-
 	return sort!(df, [:ρ])
 end
