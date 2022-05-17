@@ -5,21 +5,25 @@
 
 """
 	simulate(;
-	# ARG simulation
-	N = 100_000,
-	n = 100,
-	ρ = 0.1,
-	simtype = :yule,
-	cutoff = 0.,
-	# Inference
-	γ = 2,
-	nit = n->n/10,
-	resolve = true,
-	# Others
-	Nrep = 250,
-	write = true,
-	outfolder,
-)
+		# ARG simulation
+		N = 100_000,
+		n = 100,
+		ρ = 0.1,
+		simtype = :yule,
+		cutoff = 0.,
+		K = 2,
+		nmax = n,
+		s = (nmax - n) / (2*N),
+		# Inference
+		γ = 2,
+		nit = 100,
+		resolve = true,
+		# Others
+		Nrep = 250,
+		write = true,
+		verbose = false,
+		outfolder = make_outfolder_name(N, n, ρ, cutoff, γ, nit, resolve),
+	)
 """
 function simulate(;
 	# ARG simulation
