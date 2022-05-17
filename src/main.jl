@@ -29,6 +29,8 @@ function simulate(;
 	simtype = :yule,
 	cutoff = 0.,
 	K = 2,
+	nmax = n,
+	s = (nmax - n) / (2*N),
 	# Inference
 	γ = 2,
 	nit = 100,
@@ -41,7 +43,7 @@ function simulate(;
 )
 	for rep in 1:Nrep
 		verbose && println("Simulating trees ... ")
-		arg, trees = simulate_trees(N, n, ρ, simtype, cutoff, K)
+		arg, trees = simulate_trees(N, n, ρ, simtype, cutoff, K, nmax, s)
 		verbose && println("Inferring MCCs ... ")
 		allMCCs = get_mccs(arg, trees, γ, nit, resolve; verbose) # array of length 4
 		write && write_mccs(outfolder, rep, allMCCs, "a")
@@ -103,9 +105,9 @@ function get_mccs(arg, trees, γ, nit, resolve; verbose)
 	return rMCCs, naiveMCCs, iMCCs1 #, iMCCs2
 end
 
-function simulate_trees(N, n, ρ, simtype, cutoff, K)
+function simulate_trees(N, n, ρ, simtype, cutoff, K, nmax, s)
 	# ARG
-	arg = ARGTools.SimulateARG.simulate(N, get_r(ρ, n, N, simtype), n; K, simtype)
+	arg = ARGTools.SimulateARG.simulate(N, get_r(ρ, n, N, simtype), n; K, simtype, nmax, s)
 	# Trees
 	trees = ARGTools.trees_from_ARG(arg)
 	# trees = Dict(i => t for (i,t) in enumerate(ts))

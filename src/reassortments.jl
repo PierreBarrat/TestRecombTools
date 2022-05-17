@@ -90,27 +90,36 @@ function read_eval_reassortments(dir; filter = Dict(), Nrep = 200, verbose=true)
 end
 
 
-function eval_reassortments_w_confidence(t1::Tree, t2::Tree, iMCCs, rMCCs)
+function eval_reassortments_w_confidence(
+	t1::Tree, t2::Tree, iMCCs, rMCCs;
+	score=:branch_likelihood, neighbours=:leaves
+)
 	TR = 0 # true reassortments
 	FR = 0 # false reassortments
 	MR = 0 # missed reassortments
 	#
 	inf_reassortments = [lca(t1, m).label for m in iMCCs]
 	real_reassortments = [lca(t1, m).label for m in rMCCs]
+	conf_scores = TreeKnit.confidence_likelihood_ratio(iMCCs, t1, t2; neighbours)
 	#
-	out = zeros(Float64, length(inf_reassortments), 4)
+	out = zeros(Float64, length(inf_reassortments), 3)
 	for (i, R) in enumerate(inf_reassortments)
 		out[i, 1] = in(R, real_reassortments)
 		out[i, 2] = 1 - out[i,1]
-		out[i, 3] = TreeKnit.confidence_likelihood_ratio(iMCCs[i], t1, t2)
-		out[i, 4] = rand()
+		if score == :branch_likelihood
+			out[i, 3] = conf_scores[i]
+		elseif score == :rand
+			out[i, 3] = rand()
+		else
+			error("Unknown score type")
+		end
 	end
 	# Removing infinity scores - they correspond to MCCs that include the root
 	idx = findall(x->in(Inf, x), eachrow(out))
 	out = out[findall(i->!in(i, idx), 1:size(out,1)), :]
 	out
 end
-function _read_eval_reassortments_w_confidence(folder, Nrep)
+function read_eval_reassortments_w_confidence(folder, Nrep; score=:branch_likelihood, neighbours=:leaves)
 	out_inferred = []
 	out_naive = []
 	for f in readdir(folder)
@@ -121,7 +130,7 @@ function _read_eval_reassortments_w_confidence(folder, Nrep)
 			nMCCs = read_simulate_mccs("$(folder)/$(f)/naiveMCCs.dat", Nrep)
 			iMCCs = read_simulate_mccs("$(folder)/$(f)/inferredMCCs.dat", Nrep)
 			for (rmccs, nmccs, imccs, t1, t2) in zip(rMCCs, nMCCs, iMCCs, t1s, t2s)
-				out_ = eval_reassortments_w_confidence(t1, t2, imccs, rmccs)
+				out_ = eval_reassortments_w_confidence(t1, t2, imccs, rmccs; score, neighbours)
 				push!(out_inferred, out_)
 			end
 		end
@@ -129,23 +138,40 @@ function _read_eval_reassortments_w_confidence(folder, Nrep)
 	return out_inferred
 end
 
-function average_roc_curves(dat)
+function average_roc_curves(dat; method = :cat)
+	if method == :cat
+		datcat = vcat(dat...)
+		if isempty(datcat) || !in(0, datcat[:,1])
+			return [missing], [missing], missing
+		else
+			curve = roc(datcat[:,3], datcat[:,1])
+			return curve.FPR, curve.TPR, AUC(curve)
+		end
+	elseif method == :average
+		return _average_roc_curves(dat)
+	end
+	error("Incorrect `method` kwarg")
+end
+
+function _average_roc_curves(dat)
 	dx = 0.01
-	FP_grid = 0:dx:1
+	FP_grid = 0:dx:1.
 	TP_ongrid = zeros(length(FP_grid))
-	Z = 1
-	for (j, d) in enumerate(dat)
-		curve = roc(d[:,4], Bool.(d[:,1]))
-		if isnothing(findfirst(isnan, curve.FPR)) # Discard ROC without false positives
+	Z = 0
+	for (j, d) in enumerate(Iterators.filter(x->size(x,1)>1, dat))
+		curve = roc(d[:,3], Bool.(d[:,1]))
+		if isnothing(findfirst(isnan, curve.FPR)) &&  isnothing(findfirst(isnan, curve.TPR))
+		# Discard ROC with only false/true positives
 			itp = LinearInterpolation(
 				Interpolations.deduplicate_knots!(curve.FPR), curve.TPR
 			)
-			for (i, x) in enumerate(FP_grid)
+			for (i, x) in enumerate(FP_grid[1:end])
 				TP_ongrid[i] += itp(x)
 			end
 			Z += 1
 		end
 	end
+	TP_ongrid[end] = Z
 
-	return FP_grid, TP_ongrid/Z
+	return FP_grid, TP_ongrid/Z, sum(TP_ongrid[i]*dx/Z for (i,x) in enumerate(FP_grid[1:end-1]))
 end
