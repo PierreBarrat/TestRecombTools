@@ -260,4 +260,16 @@ Below is the correct way to get r from r⋆. I DID NOT use this for my simulatio
 T2 is the pairwise coalescence time --> population size.
 =#
 get_r_correct(rstar, n, T2, α) = rstar * (n/2)^α / T2
+function get_r_correct(rstar, n, T2, simtype::Symbol)
+	α = if simtype == :kingman
+		1
+	elseif simtype == :yule
+		0
+	elseif simtype == :flu
+		.2
+	else
+		error("Unknown simtype $simtype")
+	end
+	return get_r_correct(rstar, n, T2, α)
+end
 
